@@ -1,10 +1,10 @@
 import os
+pwd = os.path.abspath(os.path.dirname(__file__))
 
 
-DATA_DIR = 'Data'
-ABNORMAL_DATA = os.path.join(DATA_DIR, 'abnormal')
-NORMAL_DATA = os.path.join(DATA_DIR, 'normal')
-
+DATA_DIR = './Data'
+ABNORMAL_DIR = os.path.join(DATA_DIR, 'abnormal')
+NORMAL_DIR = os.path.join(DATA_DIR, 'normal')
 
 OUTPUT_DATA_DIR = os.path.join(DATA_DIR, 'Spit_Data')
 TRAIN_DIR = os.path.join(OUTPUT_DATA_DIR, 'train')
