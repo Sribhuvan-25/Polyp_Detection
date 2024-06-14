@@ -1,166 +1,10 @@
-
-# import pandas as pd
-# import numpy as np
-# import cv2
-# from read_roi import read_roi_file
-# import os
-# import cv2
-# import numpy as np
-# from read_roi import read_roi_file
-# import random
-
-# def detect_features_in_channel(channel):
-#     # Use goodFeaturesToTrack on the given channel
-#     features = cv2.goodFeaturesToTrack(channel, maxCorners=200, qualityLevel=0.01, minDistance=50, blockSize=300)
-#     if features is not None:
-#         return np.int0(features)
-#     else:
-#         return np.array([])
-
-# def filter_close_points(features, min_dist=100):
-#     # Ensure features array is in the shape (n_points, 2)
-#     if features.ndim == 3:  # In case features are in shape (n, 1, 2)
-#         features = features.reshape(-1, 2)
-    
-#     # Initialize an empty list to hold filtered points
-#     filtered_points = []
-
-#     for feature in features:
-#         if not filtered_points:  # If filtered_points is empty, add the first feature
-#             filtered_points.append(feature)
-#             continue
-
-#         # Calculate distances from the current feature to all filtered points
-#         dists = np.sqrt(np.sum((np.array(filtered_points) - feature) ** 2, axis=1))
-
-#         # Check if all distances are greater than min_dist
-#         if np.all(dists >= min_dist):
-#             filtered_points.append(feature)
-
-#     return np.array(filtered_points)
-
-# def bounding_box(roi_file_path):
-#     roi = read_roi_file(roi_file_path)
-#     for box_info in roi.values():
-#         if box_info['type'] == 'rectangle':
-#             left = box_info['left']
-#             top = box_info['top']
-#             width = box_info['width']
-#             height = box_info['height']
-#     return left, top, width, height
-
-# def extract_patch(image, center_x, center_y, patch_size):
-#     half_width, half_height = patch_size[0] // 2, patch_size[1] // 2
-#     patch = image[
-#         center_y - half_height:center_y + half_height,
-#         center_x - half_width:center_x + half_width
-#     ]
-#     return patch
-
-# def extract_patches_from_abnormal(image_path, roi_file_path, patch_size=(100, 100)):
-#     # Read the image
-#     image = cv2.imread(image_path)
-#     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-#     # Read ROI and get bounding box
-#     left, top, width, height = bounding_box(roi_file_path)
-    
-#     # Extract the ROI region
-#     roi_region = gray_image[top:top+height, left:left+width]
-    
-#     # Detect features in the ROI region
-#     features = detect_features_in_channel(roi_region)
-    
-#     if len(features) > 0:
-#         # Convert features to image coordinates
-#         features[:, 0] += left
-#         features[:, 1] += top
-
-#         # Filter close points to get salient points
-#         salient_points = filter_close_points(features)
-        
-#         if len(salient_points) > 0:
-#             # Get the closest salient point to the center of the ROI
-#             center_x, center_y = np.mean(salient_points, axis=0).astype(int)
-#             patch = extract_patch(image, center_x, center_y, patch_size)
-            
-#             # Visualize patch on image
-#             visualize_patch(image, center_x, center_y, patch_size)
-            
-#             return patch, image
-    
-#     # Fallback if no salient points found
-#     center_x, center_y = left + width // 2, top + height // 2
-#     patch = extract_patch(image, center_x, center_y, patch_size)
-    
-#     # Visualize patch on image
-#     visualize_patch(image, center_x, center_y, patch_size)
-    
-#     return patch, image
-
-# def extract_patches_from_normal(image_path, patch_size=(100, 100)):
-#     # Read the image
-#     image = cv2.imread(image_path)
-#     h, w, _ = image.shape
-    
-#     # Define the middle region to avoid borders
-#     middle_x_range = (w // 4, 3 * w // 4)
-#     middle_y_range = (h // 4, 3 * h // 4)
-    
-#     patches = []
-#     visualized_images = []
-#     for _ in range(2):  # Extract two patches
-#         center_x = random.randint(middle_x_range[0], middle_x_range[1])
-#         center_y = random.randint(middle_y_range[0], middle_y_range[1])
-#         patch = extract_patch(image, center_x, center_y, patch_size)
-#         patches.append(patch)
-        
-#         # Visualize patch on image
-#         visualize_patch(image, center_x, center_y, patch_size)
-#         visualized_images.append(image.copy())
-    
-#     return patches, visualized_images
-
-# def visualize_patch(image, center_x, center_y, patch_size):
-#     half_width, half_height = patch_size[0] // 2, patch_size[1] // 2
-#     top_left = (center_x - half_width, center_y - half_height)
-#     bottom_right = (center_x + half_width, center_y + half_height)
-#     cv2.rectangle(image, top_left, bottom_right, (0, 255, 0), 2)
-
-# def save_patches(patches, output_dir, base_name):
-#     for i, patch in enumerate(patches):
-#         patch_filename = f"{base_name}_patch_{i}.png"
-#         patch_path = os.path.join(output_dir, patch_filename)
-#         cv2.imwrite(patch_path, patch)
-
-# def save_visualized_images(images, output_dir, base_name):
-#     for i, img in enumerate(images):
-#         visualized_filename = f"{base_name}_visualized_{i}.png"
-#         visualized_path = os.path.join(output_dir, visualized_filename)
-#         cv2.imwrite(visualized_path, img)
-
-# def process_directory(input_dir, output_dir, visualized_dir, is_abnormal=False, patch_size=(100, 100)):
-#     for filename in os.listdir(input_dir):
-#         if filename.endswith('.png'):
-#             image_path = os.path.join(input_dir, filename)
-#             base_name = os.path.splitext(filename)[0]
-
-#             if is_abnormal:
-#                 roi_file_path = os.path.join(input_dir, f"{base_name}.roi")
-#                 patch, visualized_image = extract_patches_from_abnormal(image_path, roi_file_path, patch_size)
-#                 save_patches([patch], output_dir, base_name)
-#                 save_visualized_images([visualized_image], visualized_dir, base_name)
-#             else:
-#                 patches, visualized_images = extract_patches_from_normal(image_path, patch_size)
-#                 save_patches(patches, output_dir, base_name)
-#                 save_visualized_images(visualized_images, visualized_dir, base_name)
-
-import pandas as pd
-import numpy as np
-import cv2
-from read_roi import read_roi_file
 import os
 import random
+import cv2
+import numpy as np
+from read_roi import read_roi_file
+from scipy.spatial.distance import cdist
+import matplotlib.pyplot as plt
 
 def detect_features_in_channel(channel):
     features = cv2.goodFeaturesToTrack(channel, maxCorners=200, qualityLevel=0.01, minDistance=50, blockSize=300)
@@ -170,13 +14,13 @@ def detect_features_in_channel(channel):
         return np.array([])
 
 def filter_close_points(features, min_dist=100):
-    if features.ndim == 3:  # In case features are in shape (n, 1, 2)
+    if features.ndim == 3:
         features = features.reshape(-1, 2)
     
     filtered_points = []
 
     for feature in features:
-        if not filtered_points:  # If filtered_points is empty, add the first feature
+        if not filtered_points:
             filtered_points.append(feature)
             continue
 
@@ -197,106 +41,114 @@ def bounding_box(roi_file_path):
             height = box_info['height']
     return left, top, width, height
 
-def extract_patch(image, center_x, center_y, patch_size):
-    half_width, half_height = patch_size[0] // 2, patch_size[1] // 2
-    patch = image[
-        center_y - half_height:center_y + half_height,
-        center_x - half_width:center_x + half_width
-    ]
-    return patch
+def visualize_and_save(image, output_path, title):
+    plt.figure(figsize=(10, 5))
+    plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    plt.title(title)
+    plt.axis('off')
+    plt.savefig(output_path)
+    plt.close()
 
-def extract_patches_from_abnormal(image_path, roi_file_path, patch_size=(100, 100)):
-    image = cv2.imread(image_path)
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-    left, top, width, height = bounding_box(roi_file_path)
-    roi_region = gray_image[top:top+height, left:left+width]
-    
-    features = detect_features_in_channel(roi_region)
-    
-    if len(features) > 0:
-        features[:, 0] += left
-        features[:, 1] += top
-
-        salient_points = filter_close_points(features)
+def extract_and_save_patches_abnormal(folder, output_folder, visualization_folder, ideal_patch_size=(275, 300)):
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    if not os.path.exists(visualization_folder):
+        os.makedirs(visualization_folder)
         
-        if len(salient_points) > 0:
-            center_x, center_y = np.mean(salient_points, axis=0).astype(int)
-            patch = extract_patch(image, center_x, center_y, patch_size)
-            visualize_patch(image, center_x, center_y, patch_size)
-            return patch, image
-    
-    center_x, center_y = left + width // 2, top + height // 2
-    patch = extract_patch(image, center_x, center_y, patch_size)
-    visualize_patch(image, center_x, center_y, patch_size)
-    
-    return patch, image
+    for filename in os.listdir(folder):
+        if filename.endswith(('.jpg', '.jpeg', '.png')):
+            image_path = os.path.join(folder, filename)
+            image = cv2.imread(image_path)
+            visualization_image = image.copy()
+            roi_path = os.path.splitext(image_path)[0] + ".roi"
 
-def extract_patches_from_normal(image_path, patch_size=(100, 100)):
-    image = cv2.imread(image_path)
-    h, w, _ = image.shape
-    
-    middle_x_range = (w // 4, 3 * w // 4)
-    middle_y_range = (h // 4, 3 * h // 4)
-    
-    patches = []
-    visualized_images = []
-    for _ in range(2):
-        center_x = random.randint(middle_x_range[0], middle_x_range[1])
-        center_y = random.randint(middle_y_range[0], middle_y_range[1])
-        patch = extract_patch(image, center_x, center_y, patch_size)
-        patches.append(patch)
-        
-        visualize_patch(image, center_x, center_y, patch_size)
-        visualized_images.append(image.copy())
-    
-    return patches, visualized_images
+            if os.path.exists(roi_path):
+                blue, green, red = cv2.split(image)
+                features_blue = detect_features_in_channel(blue)
+                features_green = detect_features_in_channel(green)
+                features_red = detect_features_in_channel(red)
+                features_combined = np.vstack([f.reshape(-1, 2) for f in [features_blue, features_green, features_red] if f.size > 0])
+                features_combined = np.unique(features_combined, axis=0)
+                features_combined = filter_close_points(features_combined)
 
-def visualize_patch(image, center_x, center_y, patch_size):
-    half_width, half_height = patch_size[0] // 2, patch_size[1] // 2
-    top_left = (center_x - half_width, center_y - half_height)
-    bottom_right = (center_x + half_width, center_y + half_height)
-    cv2.rectangle(image, top_left, bottom_right, (0, 255, 0), 2)
+                if features_combined.size == 0:
+                    continue  # Skip if no features found
 
-def save_patches(patches, output_dir, base_name):
-    for i, patch in enumerate(patches):
-        patch_filename = f"{base_name}_patch_{i}.png"
-        patch_path = os.path.join(output_dir, patch_filename)
-        cv2.imwrite(patch_path, patch)
+                for point in features_combined:
+                    cv2.circle(visualization_image, (int(point[0]), int(point[1])), radius=5, color=(255, 0, 0), thickness=-1)
 
-def save_visualized_images(images, output_dir, base_name):
-    for i, img in enumerate(images):
-        visualized_filename = f"{base_name}_visualized_{i}.png"
-        visualized_path = os.path.join(output_dir, visualized_filename)
-        cv2.imwrite(visualized_path, img)
+                gt_left, gt_top, gt_width, gt_height = bounding_box(roi_path)
+                cv2.rectangle(visualization_image, (gt_left, gt_top), (gt_left + gt_width, gt_top + gt_height), (0, 255, 0), 3)
 
-def process_directory(input_dir, output_dir, visualized_dir, is_abnormal=False, patch_size=(100, 100)):
-    for filename in os.listdir(input_dir):
-        if filename.endswith('.png'):
-            image_path = os.path.join(input_dir, filename)
-            base_name = os.path.splitext(filename)[0]
+                gt_center = np.array([[gt_left + gt_width / 2, gt_top + gt_height / 2]])
+                distances = cdist(features_combined, gt_center, metric='euclidean')
+                closest_point_index = np.argmin(distances)
+                closest_point = features_combined[closest_point_index]
 
-            if is_abnormal:
-                roi_file_path = os.path.join(input_dir, f"{base_name}.roi")
-                patch, visualized_image = extract_patches_from_abnormal(image_path, roi_file_path, patch_size)
-                save_patches([patch], output_dir, base_name)
-                save_visualized_images([visualized_image], visualized_dir, base_name)
+                sp_start_x = max(int(closest_point[0] - ideal_patch_size[1] / 2), 0)
+                sp_start_y = max(int(closest_point[1] - ideal_patch_size[0] / 2), 0)
+                sp_end_x = min(sp_start_x + ideal_patch_size[1], image.shape[1])
+                sp_end_y = min(sp_start_y + ideal_patch_size[0], image.shape[0])
+
+                cv2.rectangle(visualization_image, (sp_start_x, sp_start_y), (sp_end_x, sp_end_y), (0, 0, 0), 3)
+
+                salient_patch = image[sp_start_y:sp_end_y, sp_start_x:sp_end_x]
+                salient_patch_name = f"{os.path.splitext(os.path.basename(image_path))[0]}_salient_patch_{sp_start_x}_{sp_start_y}.png"
+                salient_patch_path = os.path.join(output_folder, salient_patch_name)
+
+                cv2.imwrite(salient_patch_path, salient_patch)
+
+                # Save visualization
+                visualization_path = os.path.join(visualization_folder, f"{os.path.splitext(os.path.basename(image_path))[0]}_visualization.png")
+                visualize_and_save(visualization_image, visualization_path, "Salient Patch and ROI")
+
+def extract_and_save_patches_normal(folder, output_folder, visualization_folder, ideal_patch_size=(275, 300)):
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    if not os.path.exists(visualization_folder):
+        os.makedirs(visualization_folder)
+
+    for filename in os.listdir(folder):
+        if filename.endswith(('.jpg', '.jpeg', '.png')):
+            image_path = os.path.join(folder, filename)
+            image = cv2.imread(image_path)
+            visualization_image = image.copy()
+            h, w, _ = image.shape
+
+            middle_x_range = (w // 4, 3 * w // 4)
+            middle_y_range = (h // 4, 3 * h // 4)
+
+            patches = []
+            for _ in range(2):
+                center_x = random.randint(middle_x_range[0], middle_x_range[1])
+                center_y = random.randint(middle_y_range[0], middle_y_range[1])
+                sp_start_x = max(int(center_x - ideal_patch_size[1] / 2), 0)
+                sp_start_y = max(int(center_y - ideal_patch_size[0] / 2), 0)
+                sp_end_x = min(sp_start_x + ideal_patch_size[1], w)
+                sp_end_y = min(sp_start_y + ideal_patch_size[0], h)
+
+                patch = image[sp_start_y:sp_end_y, sp_start_x:sp_end_x]
+                patches.append(patch)
+                patch_name = f"{os.path.splitext(os.path.basename(image_path))[0]}_normal_patch_{sp_start_x}_{sp_start_y}.png"
+                patch_path = os.path.join(output_folder, patch_name)
+                cv2.imwrite(patch_path, patch)
+
+                cv2.rectangle(visualization_image, (sp_start_x, sp_start_y), (sp_end_x, sp_end_y), (0, 0, 0), 3)
+
+            # Save visualization
+            visualization_path = os.path.join(visualization_folder, f"{os.path.splitext(os.path.basename(image_path))[0]}_visualization.png")
+            visualize_and_save(visualization_image, visualization_path, "Extracted Patches")
+
+def process_dirs(train_dir, test_dir, output_dir, visualization_dir, ideal_patch_size=(275, 300)):
+    for data_dir in [train_dir, test_dir]:
+        for class_type in ['normal', 'abnormal']:
+            input_dir = os.path.join(data_dir, class_type)
+            output_sub_dir = os.path.join(output_dir, os.path.basename(data_dir), class_type)
+            visualization_sub_dir = os.path.join(visualization_dir, os.path.basename(data_dir), class_type)
+            os.makedirs(output_sub_dir, exist_ok=True)
+            os.makedirs(visualization_sub_dir, exist_ok=True)
+
+            if class_type == 'abnormal':
+                extract_and_save_patches_abnormal(input_dir, output_sub_dir, visualization_sub_dir, ideal_patch_size)
             else:
-                patches, visualized_images = extract_patches_from_normal(image_path, patch_size)
-                save_patches(patches, output_dir, base_name)
-                save_visualized_images(visualized_images, visualized_dir, base_name)
-
-# Define the base directory
-# base_dir = '/Users/sb/TReNDS_New/Data/Split_Data'
-
-# # Process the training and testing directories
-# for data_type in ['train', 'test']:
-#     for class_type in ['normal', 'abnormal']:
-#         input_dir = os.path.join(base_dir, data_type, class_type)
-#         output_dir = os.path.join('Processed_Data', data_type, class_type)
-#         visualized_dir = os.path.join('Visualized_Data', data_type, class_type)
-#         os.makedirs(output_dir, exist_ok=True)
-#         os.makedirs(visualized_dir, exist_ok=True)
-#         process_directory(input_dir, output_dir, visualized_dir, is_abnormal=(class_type == 'abnormal'))
-
-# print("Patch extraction and visualization complete.")
+                extract_and_save_patches_normal(input_dir, output_sub_dir, visualization_sub_dir, ideal_patch_size)
