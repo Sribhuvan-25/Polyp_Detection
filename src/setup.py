@@ -16,3 +16,19 @@ for directory in [TRAIN_DIR, TEST_DIR]:
     
 PROCESSED_PATCHES_DIR = os.path.join(DATA_DIR, 'Processed_Patches')
 VISUALIZATIONS_PATCHES_DIR = os.path.join(DATA_DIR, 'Visualizations_Extracted_Patches')
+
+TRAIN_ABNORMAL_IMAGES_DIR = os.path.join(TRAIN_DIR, 'abnormal')
+TRAIN_NORMAL_IMAGES_DIR = os.path.join(TRAIN_DIR, 'normal')
+TEST_ABNORMAL_IMAGES_DIR = os.path.join(TEST_DIR, 'abnormal')
+TEST_NORMAL_IMAGES_DIR = os.path.join(TEST_DIR, 'normal')
+
+TRAIN_ABNORMAL_PATCHES_DIR = os.path.join(PROCESSED_PATCHES_DIR, 'abnormal')
+TRAIN_NORMAL_PATCHES_DIR = os.path.join(PROCESSED_PATCHES_DIR, 'normal')
+TEST_ABNORMAL_PATCHES_DIR = os.path.join(PROCESSED_PATCHES_DIR, 'abnormal')
+TEST_NORMAL_PATCHES_DIR = os.path.join(PROCESSED_PATCHES_DIR, 'normal')
+
+NUM_CLASSES = 2
+BATCH_SIZE = 10
+
+MODEL_IMAGES_PATH = 'Models/denseNet_Images'
+MODEL_PATCHES_PATH = 'Models/denseNet_Patches'
