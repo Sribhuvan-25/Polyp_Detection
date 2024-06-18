@@ -33,14 +33,12 @@ test_images, test_labels = load.load_train_test_images(TEST_ABNORMAL_IMAGES_DIR,
 train_patches, train_patch_labels, test_patches, test_patch_labels = load.load_train_test_patches(TRAIN_ABNORMAL_PATCHES_DIR, TRAIN_NORMAL_PATCHES_DIR, 
                                                                                                   TEST_ABNORMAL_PATCHES_DIR, TEST_NORMAL_PATCHES_DIR)
 
-
-
 # Images
 model_training.train_denseNetModel(train_images, train_labels, NUM_CLASSES, MODEL_IMAGES_PATH)
 model_images = torch.load(MODEL_IMAGES_PATH)
 accuracy, precision, recall = model_training.evaluate_model(model_images, test_images, test_labels, BATCH_SIZE, device)
 
-# Images
+# Patches
 model_training.train_denseNetModel(train_patches, train_patches, NUM_CLASSES, MODEL_PATCHES_PATH)
 model_patches = torch.load(MODEL_PATCHES_PATH)
 accuracy, precision, recall = model_training.evaluate_model(model_patches, test_images, test_labels, BATCH_SIZE, device)
