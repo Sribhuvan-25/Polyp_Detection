@@ -1,6 +1,7 @@
 import os
-
 import torch
+from Functions.testing_pipeline import test_pipeline
+from Functions.training_pipeline import train_pipeline
 
 pwd = os.path.abspath(os.path.dirname(__file__))
 from Functions import load, patchExtraction_training, model_training
@@ -13,7 +14,7 @@ else:
 
 
 # Load Data
-# images, labels = load.load_data(ABNORMAL_DIR, NORMAL_DIR)
+images, labels = load.load_data(ABNORMAL_DIR, NORMAL_DIR)
 
 # Split data for training and testing
 load.split_and_copy_images(NORMAL_DIR, os.path.join(TRAIN_DIR, 'normal'), os.path.join(TEST_DIR, 'normal'), 410)
@@ -42,3 +43,9 @@ accuracy, precision, recall = model_training.evaluate_model(model_images, test_i
 model_training.train_denseNetModel(train_patches, train_patches, NUM_CLASSES, MODEL_PATCHES_PATH)
 model_patches = torch.load(MODEL_PATCHES_PATH)
 accuracy, precision, recall = model_training.evaluate_model(model_patches, test_images, test_labels, BATCH_SIZE, device)
+
+# Training Pipeline
+scaler, pca, voting_clf = train_pipeline(OUTPUT_DATA_DIR)
+
+# Testing Pipeline
+accuracy, precision, recall = test_pipeline(OUTPUT_DATA_DIR)

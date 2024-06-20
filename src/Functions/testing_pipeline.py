@@ -12,7 +12,7 @@ def test_pipeline(scaler, pca, voting_clf, root_dir, output_dir):
     all_predictions = []
     all_labels = []
 
-    for subfolder in ['normal_testing_images', 'abnormal_testing_images']:
+    for subfolder in ['test/normal', 'train/normal']:
         folder_path = os.path.join(root_dir, subfolder)
         label = 0 if subfolder == 'normal_testing_images' else 1
         for image_file in os.listdir(folder_path):
@@ -27,7 +27,9 @@ def test_pipeline(scaler, pca, voting_clf, root_dir, output_dir):
     precision = precision_score(all_labels, all_predictions)
     recall = recall_score(all_labels, all_predictions)
 
-    print(f"Completed processing. Check the output directory: {output_dir}")
-    print(f"Accuracy: {accuracy:.4f}")
-    print(f"Precision: {precision:.4f}")
-    print(f"Recall: {recall:.4f}")
+    # print(f"Completed processing. Check the output directory: {output_dir}")
+    # print(f"Accuracy: {accuracy:.4f}")
+    # print(f"Precision: {precision:.4f}")
+    # print(f"Recall: {recall:.4f}")
+    
+    return accuracy, precision, recall

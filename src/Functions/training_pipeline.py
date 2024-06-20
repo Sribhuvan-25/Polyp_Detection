@@ -9,7 +9,7 @@ def train_pipeline(train_root_dir):
     train_image_features = []
     train_labels = []
     # train_root_dir = 'Training'
-    for subfolder in ['normal_training_images', 'abnormal_training_images']:
+    for subfolder in ['train/normal', 'train/abnormal']:
         folder_path = os.path.join(train_root_dir, subfolder)
         label = 0 if subfolder == 'normal_training_images' else 1
         for image_file in os.listdir(folder_path):
