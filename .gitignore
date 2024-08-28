@@ -1,3 +1,6 @@
 Raw_Data/
 src/Data/
+src/Data_old/
+src/Processed_Images/
+src/Saved_models/
 .DS_Store
