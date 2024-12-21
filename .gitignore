@@ -3,4 +3,5 @@ src/Data/
 src/Data_old/
 src/Processed_Images/
 src/Saved_models/
+Models/
 .DS_Store
